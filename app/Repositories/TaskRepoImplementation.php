@@ -1,12 +1,13 @@
 <?php
 
-namespace App;
+namespace App\Repositories;
 
+use App\Contracts\TaskRepoInterface;
+use App\Exceptions\TaskStatusException;
 use App\Models\Task;
 
 class TaskRepoImplementation implements TaskRepoInterface
 {
-    public function __construct() {}
 
     public function index(array $data)
     {
@@ -23,7 +24,7 @@ class TaskRepoImplementation implements TaskRepoInterface
 
         // Sorting
         if (isset($data['sort']) && $data['sort'] === 'due_date') {
-            $query->orderBy('due_date', 'desc');    
+            $query->orderBy('due_date', 'desc');
         } elseif (isset($data['sort']) && $data['sort'] === 'priority') {
             $query->orderByRaw("
                 CASE 
@@ -54,33 +55,23 @@ class TaskRepoImplementation implements TaskRepoInterface
     public function update(array $data, $task_id)
     {
         $task = Task::findOrFail($task_id);
-        $newStatus = $data->status ?? $task->status;
+        $newStatus = $data['status'] ?? $task->status;
 
         if ($task->status === 'done' && $newStatus !== 'done') {
-            return response()->json([
-                'success' => false,
-                'data' => null,
-                'message' => 'Task is already done and cannot be changed',
-            ]);
+            throw new TaskStatusException('Task is already done and cannot be changed');
         }
 
         if ($task->status === 'pending' && $newStatus === 'done') {
-            return response()->json([
-                'success' => false,
-                'data' => null,
-                'message' => 'Task must go through in_progress first',
-            ]);
+            throw new TaskStatusException('Task must go through in_progress first');
         }
 
         if ($task->status === 'in_progress' && $newStatus === 'pending') {
-            return response()->json([
-                'success' => false,
-                'data' => null,
-                'message' => 'Cannot move back to pending',
-            ]);
+            throw new TaskStatusException('Cannot move back to pending');
         }
 
         $task->update($data);
+
+        return $task->fresh();
     }
 
     public function destroy($task_id)

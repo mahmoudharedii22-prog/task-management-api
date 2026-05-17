@@ -3,56 +3,64 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateTaskRequest;
-use App\TaskService;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskAPiResource;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index(TaskService $Service, Request $request)
+    protected $service;
+
+    public function __construct(TaskService $service)
+    {
+        $this->service = $service;
+    }
+
+    public function index(Request $request)
     {
 
-        $tasks = $Service->index($request->all());
+        $tasks = $this->service->index($request->all());
 
         if ($tasks->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'data' => null,
                 'message' => 'no tasks found',
-            ]);
+            ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $tasks,
+            'data' => TaskAPiResource::collection($tasks),
             'message' => 'these are all tasks',
         ], 200);
     }
 
-    public function store(TaskService $Service, CreateTaskRequest $request)
+    public function store(CreateTaskRequest $request)
     {
-        $task = $Service->store($request->validated());
+        $task = $this->service->store($request->validated());
 
         return response()->json([
             'success' => true,
-            'data' => $task,
+            'data' => new TaskAPiResource($task),
             'message' => 'task created successfully',
         ], 201);
     }
 
-    public function update(TaskService $service, CreateTaskRequest $request, $task_id)
+    public function update(UpdateTaskRequest $request, $task_id)
     {
-        $task = $service->update($request->validated(), $task_id);
+        $task = $this->service->update($request->validated(), $task_id);
 
         return response()->json([
             'success' => true,
-            'data' => $task,
+            'data' => new TaskAPiResource($task),
             'message' => 'Task updated successfully',
         ], 200);
     }
 
-    public function destroy(TaskService $service, $task_id)
+    public function destroy($task_id)
     {
-        $service->destroy($task_id);
+        $this->service->destroy($task_id);
 
         return response()->json([
             'success' => true,
@@ -61,13 +69,13 @@ class TaskController extends Controller
         ], 200);
     }
 
-    public function show(TaskService $service, $task_id)
+    public function show($task_id)
     {
-        $task = $service->show($task_id);
+        $task = $this->service->show($task_id);
 
         return response()->json([
             'success' => true,
-            'data' => $task,
+            'data' => new TaskAPiResource($task),
             'message' => 'task retrieved successfully',
         ], 200);
     }

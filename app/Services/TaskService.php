@@ -1,13 +1,17 @@
 <?php
 
-namespace App;
+namespace App\Services;
+
+use App\Contracts\TaskRepoInterface;
 
 class TaskService
 {
     /**
      * Create a new class instance.
      */
-    public function __construct(protected TaskRepoInterface $repo)
+    protected TaskRepoInterface $repo;
+
+    public function __construct(TaskRepoInterface $repo)
     {
         $this->repo = $repo;
     }
