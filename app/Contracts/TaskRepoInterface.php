@@ -2,15 +2,17 @@
 
 namespace App\Contracts;
 
+use App\Models\Task;
+
 interface TaskRepoInterface
 {
     public function index(array $data);
 
     public function store(array $data);
 
-    public function update(array $data, $task_id);
+    public function update(array $data, Task $task);
 
-    public function destroy($task_id);
+    public function destroy(Task $task);
 
-    public function show($task_id);
+    public function find($task_id);
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\TaskRepoInterface;
+use App\Models\Task;
 
 class TaskService
 {
@@ -26,18 +27,18 @@ class TaskService
         return $this->repo->store($data);
     }
 
-    public function update(array $data, $task_id)
+    public function update(array $data, Task $task): Task
     {
-        return $this->repo->update($data, $task_id);
+        return $this->repo->update($data, $task);
     }
 
-    public function destroy($task_id)
+    public function destroy(Task $task): bool
     {
-        return $this->repo->destroy($task_id);
+        return $this->repo->destroy($task);
     }
 
-    public function show($task_id)
+    public function find($task_id) :Task
     {
-        return $this->repo->show($task_id);
+        return $this->repo->find($task_id);
     }
 }

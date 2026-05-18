@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\User;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateTaskRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,11 +23,8 @@ class CreateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'status' => 'required|in:pending,in_progress,done',
-            'priority' => 'required|in:low,medium,high',
-            'due_date' => 'required|date',
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:8',
         ];
     }
 }

@@ -5,13 +5,17 @@ namespace App\Repositories;
 use App\Contracts\TaskRepoInterface;
 use App\Exceptions\TaskStatusException;
 use App\Models\Task;
+use Illuminate\Support\Facades\Auth;
 
 class TaskRepoImplementation implements TaskRepoInterface
 {
-
     public function index(array $data)
     {
         $query = Task::query();
+
+        if(! Auth::user()->hasRole('admin')) {
+            $query->where('assigned_to', Auth::id());
+        }
 
         // Filters & Search
         $query->when(isset($data['status']), function ($query) use ($data) {
@@ -52,9 +56,15 @@ class TaskRepoImplementation implements TaskRepoInterface
         return Task::create($data);
     }
 
-    public function update(array $data, $task_id)
+    public function update(array $data, Task $task)
     {
-        $task = Task::findOrFail($task_id);
+         
+        $user = Auth::user();
+
+        if (! $user->hasRole('admin')) {
+            $data = ['status' => $data['status'] ?? $task->status];
+        }
+
         $newStatus = $data['status'] ?? $task->status;
 
         if ($task->status === 'done' && $newStatus !== 'done') {
@@ -74,12 +84,12 @@ class TaskRepoImplementation implements TaskRepoInterface
         return $task->fresh();
     }
 
-    public function destroy($task_id)
+    public function destroy(Task $task)
     {
-        return Task::findOrFail($task_id)->delete();
+        return $task->delete();
     }
 
-    public function show($task_id)
+    public function find($task_id)
     {
         return Task::findOrFail($task_id);
     }
